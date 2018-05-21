@@ -14,6 +14,7 @@ admin.initializeApp({
 
 // Firebase Variables
 let db = admin.firestore();
+app.set('port', process.env.PORT || 8000);
 
 
 // TODO: Add necessary headers for things such as caching and other necessary features.
@@ -247,6 +248,7 @@ app.post("user", (req, res, next) => {
 
 });
 
-app.listen(8000, function() {
-   console.log("BookMe Server Running..."); 
+app.listen(app.get('port'), app.get('host'), function() {
+    console.log('Express server listening on port ' + app.get('port'));
 });
+
