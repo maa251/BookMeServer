@@ -1,0 +1,17 @@
+body {
+	background: white;  /* fallback for old browsers */
+}
+
+.home-jumbotron {
+	margin-top: 40%;
+	background-color: rgba(0, 0, 0, 0.5);
+}
+
+.center {
+	padding: auto auto;
+	text-align: center;
+}
+
+.white-text {
+	color: white;
+}

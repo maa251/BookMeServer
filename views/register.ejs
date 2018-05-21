@@ -1,0 +1,33 @@
+<% include ./partials/header.ejs %>
+
+<link rel="stylesheet" type="text/css" href="/stylesheets/register.css">
+	<div class="container">
+		
+		<div class="register-box">
+			
+			<h1>Register</h1>
+			<form action="/register" method="POST">
+			  <div class="form-group">
+			    <label for="email">Email address</label>
+			    <input type="email" class="form-control" id="email" name="userInfo[email]" placeholder="Email">
+			  </div>
+			  <div class="form-group">
+			    <label for="password">Password</label>
+			    <input type="password" class="form-control" id="password" name="userInfo[password]" placeholder="Password">
+			  </div>
+			  <div class="form-group">
+			    <label for="name">Name</label>
+			    <input type="text" class="form-control" id="name" name="userInfo[name]" placeholder="Password">
+			  </div>
+			 	<div class="form-group">
+			    <label for="name">Phone Number</label>
+			    <input type="text" class="form-control" id="number" name="userInfo[number]" placeholder="Password">
+			  </div>
+			  <button type="submit" class="btn btn-default">Submit</button>
+			</form>
+
+		</div>
+
+	</div>
+
+<% include ./partials/footer.ejs %>

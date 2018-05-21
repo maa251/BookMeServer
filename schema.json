@@ -1,0 +1,6 @@
+user = {
+	"name": "FullName",
+	"email": "email",
+	"password": "password",
+	"number": "number"
+}

@@ -1,0 +1,60 @@
+<% include ./partials/header.ejs %>
+
+<link rel="stylesheet" type="text/css" href="/stylesheets/register.css">
+
+<div class="canvas-container">
+<canvas id="canvas1" width="1000" height="700">
+    This text is displayed if your browser does not support HTML5 Canvas.
+</canvas>
+<div class="canvas-panel" width="40" height="700">
+  <p>id: <span id="spot-id"></span> </p>
+
+  Name:<br>
+  <input type="text" name="name" id="spot-name"><br>
+  Description:<br>
+  <textarea name="description" id="spot-description"></textarea><br>
+  x:<br>
+  <input type="number" name="x" id="spot-x"><br>
+  y:<br>
+  <input type="number" name="y" id="spot-y"><br>
+  width:<br>
+  <input type="number" name="w" id="spot-w"><br>
+  height:<br>
+  <input type="number" name="h" id="spot-h"><br>
+  <br>
+  <button id="save-preset">Save as Preset</button>
+  <button id="delete">Delete</button>
+</div>
+<div class="canvas-panel">
+    <select name="presets" id="presets"> 
+        <option value="new">New Spot</option>
+    </select> 
+    <br><br>
+
+    <button id="save-space">Save Space</button>
+</div>
+</div>
+
+<div>|</div>
+
+<script type="text/javascript" src="/javascript/canvas.js"></script>
+<script type="text/javascript">
+
+var data = <%- JSON.stringify(data) %> 
+init(data);
+
+
+
+// var sample = document.getElementById("sample");
+
+// document.getElementById("height").addEventListener("change", function() {
+//   sample.style.height = document.getElementById("height").value + "px";
+// });
+
+// document.getElementById("width").addEventListener("change", function() {
+//  sample.style.width = document.getElementById("width").value + "px";
+// });
+
+</script>
+
+<% include ./partials/footer.ejs %>
