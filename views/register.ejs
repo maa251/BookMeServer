@@ -6,22 +6,22 @@
 		<div class="register-box">
 			
 			<h1>Register</h1>
-			<form action="/register" method="POST">
+			<form action="/newuser" method="POST">
 			  <div class="form-group">
 			    <label for="email">Email address</label>
-			    <input type="email" class="form-control" id="email" name="userInfo[email]" placeholder="Email">
+			    <input type="email" class="form-control" id="email" name="email" placeholder="Email">
 			  </div>
 			  <div class="form-group">
 			    <label for="password">Password</label>
-			    <input type="password" class="form-control" id="password" name="userInfo[password]" placeholder="Password">
+			    <input type="password" class="form-control" id="password" name="password" placeholder="Password">
 			  </div>
 			  <div class="form-group">
 			    <label for="name">Name</label>
-			    <input type="text" class="form-control" id="name" name="userInfo[name]" placeholder="Password">
+			    <input type="text" class="form-control" id="name" name="name" placeholder="Password">
 			  </div>
 			 	<div class="form-group">
 			    <label for="name">Phone Number</label>
-			    <input type="text" class="form-control" id="number" name="userInfo[number]" placeholder="Password">
+			    <input type="text" class="form-control" id="number" name="number" placeholder="Password">
 			  </div>
 			  <button type="submit" class="btn btn-default">Submit</button>
 			</form>
@@ -29,5 +29,6 @@
 		</div>
 
 	</div>
+
 
 <% include ./partials/footer.ejs %>
