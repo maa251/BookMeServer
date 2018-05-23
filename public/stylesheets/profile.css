@@ -1,0 +1,28 @@
+.space-banner {
+	background: #e8f5ff;
+	padding: 10px 10px;
+	margin: 10px 10px;
+	border-radius: 10px;
+	width: 100%;
+}
+
+.btn {
+	margin: 5px 0;
+	width: 100%;
+}
+
+.profile-header {
+	background: #e8f5ff;
+	margin-bottom: 20px;
+	width: 100%;
+	min-height: 50px;
+}
+
+.profile-pic {
+	width: 100%;
+	padding: 20px;
+}
+
+.profile-text {
+	margin-top: 10%;
+}

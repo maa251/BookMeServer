@@ -166,6 +166,39 @@ app.get("/spaces", (req, res, next) => {
   });
 });
 
+
+app.get("/profile", (req,res,next)=> {
+  // Getting the full list of spaces just for testing
+  let spaceRef = db.collection("spaces");
+  var spaces = [];
+  let getDoc = spaceRef.get().then(snapshot => {
+    snapshot.forEach(space => {
+      console.log(space.data());
+      spaces.push(space.data());
+    });  
+    console.log(spaces)  
+    res.render("profile.ejs",{
+      spaces : spaces
+    });  
+  });
+
+  console.log(spaces);
+
+  
+});
+
+app.get("/spaces/owner/:id", (req,res,next)=> {
+  let spaceRef = db.collection("spaces");
+  let query = spaceRef.where("name","==","Test");
+  var x;
+  query.get().then(function(querySnapshot) {
+    querySnapshot.forEach(result=> {
+      console.log(result.data());
+    });
+    res.send("Hello");
+  });
+});
+
 /*
  * Retrieves data on space with given id
  * Returns data as json with format:
