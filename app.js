@@ -17,15 +17,35 @@ admin.initializeApp({
 let db = admin.firestore();
 app.set('port', process.env.PORT || 8000);
 
-
-// TODO: Add necessary headers for things such as caching and other necessary features.
-
+  
 app.use(cookieParser());;
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(express.static("public"));
 app.use(methodOverride("_method"));
 app.use(expressSanitizer());
+
+// Helper function definitions
+// A authenticate function that is called as a callback in all routes 
+// that require authentication
+function authenticate(req, res, next)  {
+  const sessionCookie = req.cookies.session || '';
+  console.log(req.cookies);
+  // Verify the session cookie. In this case an additional check is added to detect
+  // if the user's Firebase session was revoked, user deleted/disabled, etc.
+  admin.auth().verifySessionCookie(
+    sessionCookie, true /** checkRevoked */).then((decodedClaims) => {
+    res.locals.user = decodedClaims;
+    next();
+  }).catch(error => {
+    // Session cookie is unavailable or invalid. Force user to login.
+    //console.log(error);
+    res.redirect('/');
+  });
+
+}
+
+//Routes
 
 app.get("/", function(req, res) {
     res.render("home.ejs");
@@ -46,6 +66,7 @@ app.post("/register", (req, res) => {
 app.post('/sessionLogin', (req, res) => {
   // Get the ID token passed and the CSRF token.
   const idToken = req.body.idToken.toString();
+  console.log(idToken);
   // Set session expiration to 5 days.
   const expiresIn = 60 * 60 * 24 * 5 * 1000;
   // Create the session cookie. This will also verify the ID token in the process.
@@ -54,9 +75,9 @@ app.post('/sessionLogin', (req, res) => {
   // can be checked to ensure user was recently signed in before creating a session cookie.
   admin.auth().createSessionCookie(idToken, {expiresIn}).then((sessionCookie) => {
     // Set cookie policy for session cookie.
-    const options = {maxAge: expiresIn, httpOnly: true, secure: true};
+    const options = {maxAge: expiresIn, httpOnly: true};
     res.cookie('session', sessionCookie, options);
-    res.end(JSON.stringify({status: 'success'}));
+    res.send(JSON.stringify({status: 'success'}));
   }, error => {
     res.status(401).send('UNAUTHORIZED REQUEST!');
   });
@@ -72,7 +93,7 @@ app.get("/canvas", function(req, res) {
 /*
  * Edit space with the given id
 */
-app.get("/spaces/edit/:id", (req,res) => {
+app.get("/spaces/edit/:id", authenticate, (req,res) => {
   console.log('test');
   // TODO: do authentication stuff
   let spaceRef = db.collection('spaces').doc(req.params.id);
@@ -113,9 +134,8 @@ app.get("/spaces/edit/:id", (req,res) => {
 app.post("/spaces", (req, res, next) => {
 	// TODO: check is user is authorized to create/edit spaces (possibly just use firebase rules here)
 	// TODO: optimize the updating so that it does not rewrite the whole space everytime
-  // TODO: Possibly make the space's name its uid
 	let spaceObj = req.body;
-  // TODO: send info on the space in an object called "info"
+
   let info = spaceObj.info;
   // TODO: Change this to info object once I start supporting sending data
   let spaceRef = db.collection('spaces').doc();
@@ -139,8 +159,6 @@ app.post("/spaces", (req, res, next) => {
     console.log(err);
   });
 	
-
-
 });
 
 /*
@@ -167,11 +185,16 @@ app.get("/spaces", (req, res, next) => {
 });
 
 
-app.get("/profile", (req,res,next)=> {
+app.get("/profile",authenticate, (req,res,next)=> {
   // Getting the full list of spaces just for testing
+  let user = res.locals.user;
+  if (user.provider != true) {
+    // TODO: Handle case where user is not authorized
+  } 
+
   let spaceRef = db.collection("spaces");
   var spaces = [];
-  let getDoc = spaceRef.get().then(snapshot => {
+  let getDoc = spaceRef.where('owner', '==', user.uid).get().then(snapshot => {
     snapshot.forEach(space => {
       console.log(space.data());
       spaces.push(space.data());
@@ -232,7 +255,7 @@ app.get("/spaces/:id", (req,res,next)=> {
  * Takes json object with format:
  * TODO: fill in json format here later
 */
-app.put("/spaces/:id", (req, res, next) => {
+app.put("/spaces/:id", authenticate, (req, res, next) => {
 	// TODO: check is user is authorized to create/edit spaces (possibly just use firebase rules here)
 	// TODO: check if space exists
 	// TODO: if space exists check if user is authorized to edit it
@@ -280,27 +303,54 @@ app.post("/newuser", (req, res, next) => {
 	let userInfo = req.body;
 	console.log(userInfo);
 	admin.auth().createUser({
-  "email": userInfo.email,
-  "password": userInfo.password,
-  "displayName": userInfo.name,
-  "phoneNumber": userInfo.number
-})
-  .then(function(userRecord) {
-    // See the UserRecord reference doc for the contents of userRecord.
+    "email": userInfo.email,
+    "password": userInfo.password,
+    "displayName": userInfo.name,
+    "phoneNumber": userInfo.number
+  }).then((userRecord) => {
     console.log("Successfully created new user:", userRecord.uid);
-
-    //Eventually will return idToken here to client
-    res.send("Success");
-  })
-  .catch(function(error) {
-    console.log("Error creating new user:", error);
-    res.status(500).send("ERROR: " + error);
+    return admin.auth().setCustomUserClaims(userRecord.uid, {provider: true});
+  }).then(() => {
+      res.send("Success");
+  }).catch(function(error) {
+      console.log("Error creating new user:", error);
+      res.status(500).send("ERROR: " + error);
   });
 });
 
-app.post("user", (req, res, next) => {
-	let userInfo = req.body;
+// Make new reservations
+app.post("/reservations", (req, res) => {
+  let resInfo = req.body;
+  let startTime = resInfo.start;
+  let endTime = resInfo.end;
+  resInfo.start = parseInt(resInfo.start);
+  resInfo.end = parseInt(resInfo.end);
+  resInfo.spotId = parseInt(resInfo.spotId);
+  // First verify that the reservation is legal (There isn't one at the same time already)
+  let reservations = db.collection("reservations").where("spaceId", "==", resInfo.spaceId).where("spotId", "==", resInfo.spotId);
+  let startCheck = reservations.where("start", ">=", startTime).where("start", "<=", endTime);
+  let endCheck = reservations.where("end", "<=", endTime).where("end", ">=", startTime);
+  let containCheck = reservations.where("end", ">=", endTime);
 
+  startCheck.get().then(snapshot => {
+    console.log(snapshot.size);
+    if (snapshot.size != 0) throw "invalid-time";
+    return endCheck.get();
+  }).then(snapshot => {
+    if (snapshot.size != 0) throw "invalid-time";
+    return containCheck.get();
+  }).then(snapshot => {
+    snapshot.forEach(reservation => {
+      if (reservation.data().start <= resInfo.end) throw "invalid-time";
+    });
+    let resRef = db.collection('reservations').doc();
+    return resRef.set(resInfo);
+  }).then(()=> {
+    res.send(JSON.stringify({status: "success"}));
+  }).catch(err => {
+    console.log(err);
+    res.status(500).send(JSON.stringify({status: err}));
+  });
 });
 
 app.listen(app.get('port'), app.get('host'), function() {

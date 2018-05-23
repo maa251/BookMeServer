@@ -19,12 +19,21 @@ function initAuth() {
   firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
 }
 
+
+
 // Make a post request to the backend to generate the session cookie using the 
 // provided id token.
 function postIdTokenToSessionLogin(idToken) {
-	$.post('/sessionlogin', {idToken: idToken}, function(data, status) { 
-		if (status == "error") throw "Error";
-	});
+	var xhr = new XMLHttpRequest();
+	xhr.open('POST', '/sessionLogin', true);
+	//xhr.withCredentials = true;
+	xhr.onload = function () {
+	  // Request finished. Do processing here.
+	  console.log(xhr.response);
+
+	};
+	xhr.setRequestHeader("Content-type", "application/json");
+	xhr.send(JSON.stringify({idToken: idToken}));
 }
 
 // Signs the user into firebase locally and creates a session cookie 
@@ -40,11 +49,8 @@ function signIn(email, password) {
 	    return postIdTokenToSessionLogin(idToken);
 	  });
 	}).then(() => {
-	  // A page redirect would suffice as the persistence is set to NONE.
-	  return firebase.auth().signOut();
-	}).then(() => {
 	  // Redirect to next page
-	  window.location.assign('/spaces');
+	 window.location.assign('/profile');
 	}).catch(err=>{
 		console.log(err);
 	});

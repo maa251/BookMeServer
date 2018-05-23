@@ -90,3 +90,7 @@ router.put("/spaces/:id", (req, res, next) => {
     res.status(500).send("Internal Error");
     console.log(err);
   });
+
+});
+
+module.export = router;
