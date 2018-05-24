@@ -133,9 +133,9 @@ this.saveBtn.onclick = function() {
   var body = canvasState.save();  
   var oReq = new XMLHttpRequest();
   oReq.addEventListener("load", function() {
-    console.log("Done");
+    console.log(oReq.response);
   });
-  console.log(JSON.stringify(body));
+  console.log(canvasState.id);
   oReq.open("PUT", "/spaces/" + canvasState.id);
   oReq.setRequestHeader("Content-type", "application/json")
   oReq.send(JSON.stringify(body));
@@ -613,12 +613,14 @@ CanvasState.prototype.load = function(json) {
 function init(data) {
   console.log(data.spots);
   var s = new CanvasState(document.getElementById('canvas1'));
+
   s.addShape(new Shape(40,40,50,50)); // The default is gray
   var a = new Shape(60,140,40,60, 'lightskyblue');
   s.addShape(a);
   // Lets make some partially transparent
   s.addShape(new Shape(80,150,60,30, 'rgba(127, 255, 212, .5)'));
   s.addShape(new Shape(125,80,30,80, 'rgba(245, 222, 179, .7)'));
+
   s.removeShape(a);
   s.load(data);
 }

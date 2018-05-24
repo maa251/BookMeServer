@@ -103,6 +103,7 @@ app.get("/spaces/edit/:id", authenticate, (req,res) => {
   let getDoc = spaceRef.get().then(doc => {
     if (doc.exists) {
       spaceObj.info = doc.data();
+      spaceObj.info.id = doc.id;
       return spaceRef.collection('spots').get();
     } else throw 'invalid-ID';
   }).then(snapshot => {
@@ -114,6 +115,7 @@ app.get("/spaces/edit/:id", authenticate, (req,res) => {
     snapshot.forEach(preset => {
       spaceObj.presets.push(preset.data());
     });
+    spaceObj.id = req.params.id;
     console.log(spaceObj)
     return res.render("canvas.ejs", {data: spaceObj});
   }).catch(err => {
