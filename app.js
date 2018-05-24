@@ -264,11 +264,12 @@ app.get("/spaces/:id", (req,res,next)=> {
   // TODO: check is user is authorized to do this. Should probably be done as middleware for all requests that require a user is signed in
   let spaceRef = db.collection('spaces').doc(req.params.id);
   let spaceObj = {};
-  spaceObj.id = req.params.id;
+  spaceObj.info = {};
   spaceObj.spots = [];
   let getDoc = spaceRef.get().then(doc => {
     if (doc.exists) {
       spaceObj.info = doc.data();
+      spaceObj.info.id = req.params.id;
       return spaceRef.collection('spots').get()
     } else throw 'invalid-ID';
   }).then(snapshot => {
