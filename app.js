@@ -354,6 +354,7 @@ app.post("/newuser", (req, res, next) => {
 // Make new reservations
 app.post("/reservations", (req, res) => {
   let resInfo = req.body;
+  console.log(resInfo);
   let startTime = resInfo.start;
   let endTime = resInfo.end;
   resInfo.start = parseInt(resInfo.start);
