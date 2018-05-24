@@ -264,6 +264,7 @@ app.get("/spaces/:id", (req,res,next)=> {
   // TODO: check is user is authorized to do this. Should probably be done as middleware for all requests that require a user is signed in
   let spaceRef = db.collection('spaces').doc(req.params.id);
   let spaceObj = {};
+  spaceObj.id = req.params.id;
   spaceObj.spots = [];
   let getDoc = spaceRef.get().then(doc => {
     if (doc.exists) {
@@ -298,7 +299,6 @@ app.put("/spaces/:id", authenticate, (req, res, next) => {
   console.log(req.params.id);
   // TODO: send info on the space in an object called "info"
   let info = spaceObj.info;
-  info.id = req.params.id;
   // TODO: Change this to info object once I start supporting sending data
   let batch = db.batch();
   let spaceRef = db.collection('spaces').doc(req.params.id);
