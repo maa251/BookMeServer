@@ -298,6 +298,7 @@ app.put("/spaces/:id", authenticate, (req, res, next) => {
   console.log(req.params.id);
   // TODO: send info on the space in an object called "info"
   let info = spaceObj.info;
+  info.id = req.params.id;
   // TODO: Change this to info object once I start supporting sending data
   let batch = db.batch();
   let spaceRef = db.collection('spaces').doc(req.params.id);
