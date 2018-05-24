@@ -173,10 +173,12 @@ app.get("/spaces", (req, res, next) => {
   let spacesRef = db.collection('spaces');
   let getDoc = spacesRef.get().then(snapshot => {
     let spaces = [];
+
     snapshot.forEach(space => {
-      let spaceObj = space.data();
+      let spaceObj = {};
+      spaceObj.info = space.data();
       // NOTE: This is only here because I wasn't adding id to the space docs before. This is fixed now and thus uncessary moving forward
-      if (!spaceObj.id) spaceObj.id = space.id;
+      if (!spaceObj.info.id) spaceObj.info.id = space.id;
       spaces.push(spaceObj);
     })
     return res.send(spaces);
