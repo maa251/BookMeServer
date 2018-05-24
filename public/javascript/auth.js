@@ -30,6 +30,7 @@ function postIdTokenToSessionLogin(idToken) {
 	xhr.onload = function () {
 	  // Request finished. Do processing here.
 	  console.log(xhr.response);
+    window.location.assign('/profile');
 
 	};
 	xhr.setRequestHeader("Content-type", "application/json");
@@ -48,9 +49,6 @@ function signIn(email, password) {
 
 	    return postIdTokenToSessionLogin(idToken);
 	  });
-	}).then(() => {
-	  // Redirect to next page
-	 window.location.assign('/profile');
 	}).catch(err=>{
 		console.log(err);
 	});

@@ -40,15 +40,15 @@ function authenticate(req, res, next)  {
   }).catch(error => {
     // Session cookie is unavailable or invalid. Force user to login.
     //console.log(error);
-    res.redirect('/');
+    res.redirect('/login');
   });
 
 }
 
 //Routes
 
-app.get("/", function(req, res) {
-    res.render("home.ejs");
+app.get("/", authenticate, function(req, res) {
+    res.redirect('/profile')
 });
 
 app.get("/register", (req, res) => {
@@ -131,13 +131,15 @@ app.get("/spaces/edit/:id", authenticate, (req,res) => {
  * Takes json object with format:
  * TODO: fill in json format here later
 */
-app.post("/spaces", (req, res, next) => {
+app.post("/spaces", authenticate, (req, res, next) => {
 	// TODO: check is user is authorized to create/edit spaces (possibly just use firebase rules here)
 	// TODO: optimize the updating so that it does not rewrite the whole space everytime
 	let spaceObj = req.body;
 
   let info = spaceObj.info;
-  // TODO: Change this to info object once I start supporting sending data
+  // Add the owner Id to the info object
+  info.owner = res.locals.user.uid;
+
   let spaceRef = db.collection('spaces').doc();
   let spaceId = spaceRef.id;
   let addSpace = spaceRef.set(info).then(() => {
@@ -196,12 +198,14 @@ app.get("/profile",authenticate, (req,res,next)=> {
   var spaces = [];
   let getDoc = spaceRef.where('owner', '==', user.uid).get().then(snapshot => {
     snapshot.forEach(space => {
-      console.log(space.data());
-      spaces.push(space.data());
+      let spaceObj = space.data();
+      spaceObj.id = space.id;
+      spaces.push(spaceObj);
     });  
-    console.log(spaces)  
+    console.log(user)  
     res.render("profile.ejs",{
-      spaces : spaces
+      spaces : spaces,
+      user: user
     });  
   });
 
@@ -210,15 +214,40 @@ app.get("/profile",authenticate, (req,res,next)=> {
   
 });
 
-app.get("/spaces/owner/:id", (req,res,next)=> {
-  let spaceRef = db.collection("spaces");
-  let query = spaceRef.where("name","==","Test");
-  var x;
+app.get('/signout',authenticate, (req, res) => {
+  const sessionCookie = req.cookies.session || '';
+  res.clearCookie('session');
+  res.redirect('/login');
+
+})
+
+app.get("/login", (req,res) => {
+  res.render("home.ejs");
+});
+
+app.get("/spaces/view/:id", authenticate, (req,res,next)=> {
+  let resRef = db.collection('reservations')
+  let query = resRef.where("spaceId","==",req.params.id);
+  let reservations = [];
+  let spaceObj = {};
+  spaceObj.spots = [];
+  let spaceRef = db.collection('spaces').doc(req.params.id);
   query.get().then(function(querySnapshot) {
     querySnapshot.forEach(result=> {
-      console.log(result.data());
+      reservations.push(result.data());
     });
-    res.send("Hello");
+    return spaceRef.get();
+  }).then(doc => {
+    spaceObj.info = doc.data();
+    return spaceRef.collection('spots').get()
+  }).then(snapshot => {
+    snapshot.forEach(spot => {
+      spaceObj.spots.push(spot.data());
+    });
+    return res.render("viewSpace.ejs", {reservations: reservations, space: spaceObj});
+  }).catch(err => {
+    console.log(err);
+    res.status(500).send(err);
   });
 });
 
@@ -234,7 +263,7 @@ app.get("/spaces/:id", (req,res,next)=> {
   spaceObj.spots = [];
   let getDoc = spaceRef.get().then(doc => {
     if (doc.exists) {
-      spaceObj.info = doc.data();;
+      spaceObj.info = doc.data();
       return spaceRef.collection('spots').get()
     } else throw 'invalid-ID';
   }).then(snapshot => {

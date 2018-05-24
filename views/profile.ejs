@@ -3,6 +3,48 @@
 <% include ./partials/navbar.ejs %>
 
 <link rel="stylesheet" type="text/css" href="/stylesheets/profile.css">
+<style>
+body {font-family: Arial, Helvetica, sans-serif;}
+
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}
+
+/* The Close Button */
+.close {
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+</style>
 
 <!-- <nav class="navbar navbar-inverse">
   <div class="container-fluid">
@@ -20,8 +62,6 @@
 
 <div class="row">
 	
-
-
 </div>
 
 <div class="container">
@@ -32,13 +72,15 @@
 
 			<div style="background: #e8f5ff; border-radius: 10px; padding: 10px 10px; margin-top: 10px;">
 				<img class="profile-pic" src="https://www.vccircle.com/wp-content/uploads/2017/03/default-profile.png" style="width: 100%; padding: 5px 5px;">
-				<h1>Username</h1>
-				<p>description</p>
+				<h1><%= user.name %> </h1>
+				
+					<a href="/signout" class="btn btn-success">Sign Out</a>
+				
 			</div>
 
 		</div>
 
-		<div class="col-lg-9" style="height: 200;">
+		<div id="space-list" class="col-lg-9" style="height: 200;">
 			
 			<% spaces.forEach(function(space){ %>
 
@@ -49,18 +91,19 @@
 						<div class="row">
 
 							<div class="col-lg-10">
-								<h3>Name</h3>
+								<h3><%= space.name%></h3>
 							</div>
 
 							<div class="col-lg-2">
-								<a href="/spaces/edit/<%= /*TODO: SPACE ID GOES HERE */ %>" class="btn btn-warning">Edit</a>
+
+								<a href=<%= "spaces/edit/" + space.id %> class="btn btn-warning">Edit Spots</a>
 							</div>
 
 							<div class="col-lg-10">
-								<p>description</p>
+								<p><%= space.description%></p>
 							</div>
 							<div class="col-lg-2">
-								<a href="" class="btn btn-success">View</a>
+								<a href=<%= "spaces/view/" + space.id %> class="btn btn-success">View</a>
 							</div>
 
 						</div>
@@ -72,7 +115,7 @@
 			<% }); %> 
 
 			<div class="row">
-					<a href="" class="btn btn-primary" style="width: 100%; margin: 10px 10px; padding: 10px 10px;">Create New</a>
+				<a id="myBtn" class="btn btn-primary" style="width: 100%; margin: 10px 10px; padding: 10px 10px;">Create New</a>
 			</div>
 
 		</div>
@@ -80,5 +123,74 @@
 	</div>
 
 </div>
+
+<!-- The Modal -->
+<div id="myModal" class="modal">
+
+  <!-- Modal content -->
+  <div class="modal-content">
+    <span class="close">&times;</span>
+
+	  <div class="form-group">
+	    <label for="name">Name</label>
+	    <input type="text" class="form-control" id="name" name="name" placeholder="Name" required>
+	  </div>
+	  <div class="form-group">
+	    <label for="name">Description</label>
+	    <textarea class="form-control" id="desc" name="name" required></textarea>
+	  </div>
+	  <button id="create" class="btn btn-default">Create</button>
+
+  </div>
+
+</div>
+
+<script>
+	// Get the modal
+	var modal = document.getElementById('myModal');
+
+	// Get the button that opens the modal
+	var btn = document.getElementById("myBtn");
+
+	// Get the <span> element that closes the modal
+	var span = document.getElementsByClassName("close")[0];
+
+	//Get Create Button
+	var createBtn = document.getElementById("create");
+
+	//set Create Button onclick
+	createBtn.onclick = function() {
+		var name = document.getElementById("name").value;
+		var desc = document.getElementById("desc").value;
+
+		var xhr = new XMLHttpRequest();
+		xhr.open('POST', '/spaces', true);
+		//xhr.withCredentials = true;
+		xhr.onload = function () {
+		  // Request finished. Do processing here.
+		  console.log(xhr.response);
+
+		};
+		xhr.setRequestHeader("Content-type", "application/json");
+		xhr.send(JSON.stringify({info: {name: name, description:desc}}));
+	}
+
+	// When the user clicks the button, open the modal 
+	btn.onclick = function() {
+	    modal.style.display = "block";
+	}
+
+	// When the user clicks on <span> (x), close the modal
+	span.onclick = function() {
+	    modal.style.display = "none";
+	}
+
+	// When the user clicks anywhere outside of the modal, close it
+	window.onclick = function(event) {
+	    if (event.target == modal) {
+	        modal.style.display = "none";
+	    }
+	}
+</script>
 
 <% include ./partials/footer.ejs %>

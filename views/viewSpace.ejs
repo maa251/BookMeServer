@@ -1,0 +1,48 @@
+<!DOCTYPE = html>
+<html>
+<head>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript">
+   google.charts.load("current", {packages:["timeline"]});
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+
+      var resArr = <%- JSON.stringify(reservations) %>;
+      var space = <%- JSON.stringify(space) %>;
+      var spots = space.spots;
+      console.log(resArr);
+      var rows = [];
+      for(var i = 0; i < resArr.length; i++) {
+
+        var row = [];
+        var res = resArr[i];
+        row.push(res.spotId.toString());
+        if (res.userId) row.push(res.userId);
+        else row.push('0');
+        row.push(new Date(parseInt(res.start)));
+        row.push(new Date(parseInt(res.end)));
+        rows.push(row);
+      }
+
+      var container = document.getElementById('timeline');
+      var chart = new google.visualization.Timeline(container);
+      var dataTable = new google.visualization.DataTable();
+
+      dataTable.addColumn({ type: 'string', id: 'spotId' });
+      dataTable.addColumn({ type: 'string', id: 'userId'})
+      dataTable.addColumn({ type: 'date', id: 'Start' });
+      dataTable.addColumn({ type: 'date', id: 'End' });
+      console.log(rows);
+      dataTable.addRows(rows);
+
+      chart.draw(dataTable);
+
+    }
+  </script>
+</head>
+  <body>
+    <div id="timeline" style="height: 180px;"></div>
+  </body>
+
+</html>
